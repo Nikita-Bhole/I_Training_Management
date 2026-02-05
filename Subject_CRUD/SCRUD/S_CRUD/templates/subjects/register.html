@@ -1,0 +1,71 @@
+{% extends "subjects/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center shadow-lg" style="border-radius: 10px; overflow: hidden; min-height: 400px;">
+        
+        
+        <div class="col-md-5 d-none d-md-block">
+            <div class="h-100 w-100"
+                 style="
+                 background: url('{% static 'imgs/Registration.jpg' %}') center center/cover no-repeat;
+                 height: 100%;
+                 min-height: 100%;
+                 ">
+            </div>
+        </div>
+
+        
+        <div class="col-md-7 col-12 d-flex align-items-center">
+            <div class="p-4 p-md-5 w-100 bg-white">
+                <h2 class="text-center text-success mb-4">Register</h2>
+
+                {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group mb-3">
+                        <label>First Name</label>
+                        <input type="text" name="first_name" class="form-control" placeholder="Enter first name" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" class="form-control" placeholder="Enter last name" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Confirm Password</label>
+                        <input type="password" name="password2" class="form-control" placeholder="Confirm password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block w-100 mt-3">Register</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <small>Already have an account? <a href="{% url 'login' %}">Login</a></small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

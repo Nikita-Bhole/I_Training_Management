@@ -1,0 +1,206 @@
+{% extends 'subjects/base.html' %}
+
+{% block title %}Subjects{% endblock %}
+
+{% block content %}
+<h3>Subjects</h3>
+
+<div id="data-list">Page Loading</div>
+
+<div class="modal fade" id="addSubjectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="addSubjectForm">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Subject</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Name</label>
+            <input type="text" id="add-name" name="name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Code</label>
+            <input type="text" id="add-code" name="code" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Add</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="editSubjectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="editSubjectForm">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Subject</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit-id" name="id">
+          <div class="mb-3">
+            <label>Name</label>
+            <input type="text" id="edit-name" name="name" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label>Code</label>
+            <input type="text" id="edit-code" name="code" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Update</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function cleanModal(modalId) {
+    const modal = $(modalId);
+    modal.modal('hide');
+    setTimeout(() => {
+        $('body').removeClass('modal-open');
+        $('.modal-backdrop').remove();
+        modal.find('form')[0].reset();
+    }, 300);
+}
+
+function loadSubjects(page = 1) {
+    $.ajax({
+        url: "{% url 'subject_list' %}",
+        type: "GET",
+        data: { page: page },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        success: function (response) {
+            $("#data-list").html(response);
+        },
+        error: function (xhr, status, error) {
+            $("#data-list").html("Error loading subjects: " + error);
+        }
+    });
+}
+
+
+$(document).on('click', '#data-list .pagination a', function (e) {
+    e.preventDefault();
+
+    let page = $(this).attr('href').split('page=')[1];
+    loadSubjects(page);
+});
+
+
+
+
+function AddSubject() {
+    $(document).on('submit', '#addSubjectForm', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'subject_list' %}",
+            type: "POST",
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            data: $('#addSubjectForm').serialize(),
+            success: function(response) {
+                cleanModal('#addSubjectModal');
+                loadSubjects();
+                Swal.fire("Added!", "Subject added successfully.", "success");
+            },
+            error: function(xhr, status, error) {
+                Swal.fire("Failed!", "Could not add subject: " + error, "error");
+            }
+        });
+    });
+}
+
+function EditModal() {
+    $(document).on('click', '.edit-btn', function() {
+        $('#edit-id').val($(this).data('id'));
+        $('#edit-name').val($(this).data('name'));
+        $('#edit-code').val($(this).data('code'));
+    });
+
+    $(document).on('submit', '#editSubjectForm', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: "Do you want to save the changes?",
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Save",
+            denyButtonText: `Don't save`
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{% url 'subject_list' %}",
+                    type: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    data: $('#editSubjectForm').serialize(),
+                    success: function(response) {
+                        cleanModal('#editSubjectModal');
+                        loadSubjects();
+                        Swal.fire("Saved!", "", "success");
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire("Update failed!", error, "error");
+                    }
+                });
+            } else if (result.isDenied) {
+                Swal.fire("Changes are not saved", "", "info");
+            }
+        });
+    });
+}
+
+function DeleteSubject() {
+    $(document).on('click', '.delete-btn', function() {
+        let id = $(this).data('id');
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{% url 'subject_list' %}",
+                    type: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    data: {
+                        delete_id: id,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        Swal.fire("Deleted!", response.message, "success");
+                        loadSubjects();
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire("Error!", "Delete failed: " + error, "error");
+                    }
+                });
+            }
+        });
+    });
+}
+
+$(document).ready(function() {
+    loadSubjects(); 
+    AddSubject();
+    EditModal();
+    DeleteSubject();
+});
+</script>
+{% endblock %}
