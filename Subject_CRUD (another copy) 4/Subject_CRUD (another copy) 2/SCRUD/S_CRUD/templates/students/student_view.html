@@ -1,0 +1,40 @@
+{% extends "subjects/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Results of {{ student.name }}</h3>
+    <p>
+        <strong>Course:</strong> {{ student.batch.course.name }} |
+        <strong>Batch:</strong> {{ student.batch.name }} |
+        <strong>Start Date:</strong> {{ student.batch.start_date }}
+    </p>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Subject</th>
+                <th>Marks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in results %}
+            <tr>
+                <td>{{ r.subject.name }}</td>
+                <td>{{ r.marks }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th>Total</th>
+                <th>{{ total_marks }}</th>
+            </tr>
+            <tr>
+                <th>Average</th>
+                <th>{{ average|floatformat:2 }}</th>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{% url 'batch_students' student.batch.id %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}
+
+

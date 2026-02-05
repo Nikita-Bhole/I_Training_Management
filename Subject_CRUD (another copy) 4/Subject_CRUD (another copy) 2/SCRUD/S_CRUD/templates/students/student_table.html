@@ -1,0 +1,64 @@
+<div id="student-table-container">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Batch</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.id }}</td>
+                <td>{{ s.name }}</td>
+                <td>
+                    {% if s.batch %}
+                        {{ s.batch.name }}
+                    {% else %}
+                        No Batch
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-warning editBtn"
+                        data-id="{{ s.id }}"
+                        data-name="{{ s.name }}"
+                        data-batch="{% if s.batch %}{{ s.batch.id }}{% endif %}">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="{{ s.id }}">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No Students found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
